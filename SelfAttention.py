@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
 
-class MutiHeadAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
 
     def __init__(self, n_head, dim, dropout=0.1):
         super().__init__()
@@ -36,7 +36,7 @@ class MutiHeadAttention(nn.Module):
         attention_scores = torch.matmul(Q, K.transpose(-2, -1)) / np.sqrt(self.dim_head)
 
         if mask is not None:
-            attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
+            attention_scores = attention_scores.masked_fill(mask == True, -torch.inf)
 
         attn_probs = torch.softmax(attention_scores, dim=-1) #不一定要softmax
 
@@ -59,12 +59,22 @@ class MutiHeadAttention(nn.Module):
         value: [batch_size, seq_len_v, dim]
         mask:  [batch_size, seq_len_q, seq_len_k]
         """
+        if query.isnan().any() or key.isnan().any() or value.isnan().any():
+            print("query/key/value 包含 NaN")
         Q = self.split_heads(self.w_q(query))
         K = self.split_heads(self.w_k(key))
         V = self.split_heads(self.w_v(value))
+        if Q.isnan().any() or K.isnan().any() or V.isnan().any():
+            print("Q/K/V 包含 NaN")
 
         #attn_output = self.scaled_dot_product_attention(Q, K, V, mask)
-        attn_output = F.scaled_dot_product_attention(Q, K, V, mask)
+        #attn_output = F.scaled_dot_product_attention(Q, K, V, attn_mask=mask)
+        attn_output = self.scaled_dot_product_attention(Q, K, V, mask)
+        if attn_output.isnan().any() or attn_output.isinf().any():
+            print(f"attn_output 包含 NaN/Inf")
+            print(f"Q stats: min={Q.min()}, max={Q.max()}")
+            print(f"K stats: min={K.min()}, max={K.max()}")
+
         output = self.w_o(self.merge_heads(attn_output))
 
         return output

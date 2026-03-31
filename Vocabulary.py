@@ -120,18 +120,18 @@ class Tokenizer:
 
     def batch_tokenize(self, smiles_list, pad: bool=True):
         encoded_tokens = []
-        max_length = len(smiles_list[0])
+        len_max = 0
         for smiles in smiles_list:
-            encoded_tokens.append(
-                self.VOCAB.encode(self.PATTERN.findall(smiles))
-            )
-            if len(smiles) > max_length:
-                max_length = len(smiles)
+            tokens = self.PATTERN.findall(smiles)
+            encoded = [self.VOCAB.bos_index] + self.VOCAB.encode(tokens) + [self.VOCAB.eos_index]
+            encoded_tokens.append(encoded)
+            len_max = max(len_max, len(encoded))
+
         if pad:
             for seq in encoded_tokens:
                 len_seq = len(seq)
-                if len_seq < max_length:
-                    seq.extend([self.VOCAB.pad_index] * (max_length - len_seq))
+                if len_seq < len_max:
+                    seq.extend([self.VOCAB.pad_index] * (len_max - len_seq))
 
         return encoded_tokens
 

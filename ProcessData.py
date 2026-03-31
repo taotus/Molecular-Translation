@@ -53,15 +53,15 @@ class ImgDataset(Dataset):
         print(f"ImgDataset saved to {file_path}")
 
     @classmethod
-    def load_from_tensor_file(cls, file_path, train=True):
-        img_dataset = cls(train=train)
+    def load_from_tensor_file(cls, file_path):
+        img_dataset = cls()
         img_dataset.img_label_list = torch.load(file_path)
         print(f"ImgDataset load from {file_path}")
         return img_dataset
 
     @classmethod
-    def load_from_tensor_files(cls, file_path_list, train=True):
-        img_dataset = cls(train=train)
+    def load_from_tensor_files(cls, file_path_list):
+        img_dataset = cls()
         img_dataset.img_label_list.clear()
         for path in file_path_list:
             img_dataset.img_label_list.extend(torch.load(path))

@@ -9,6 +9,10 @@ class CNN(nn.Module):
     def __init__(self, hidden_channel=32, output_channel=32, output_size=64):
         super().__init__()
 
+        self.hidden_channel = hidden_channel
+        self.output_channel = output_channel
+        self.output_size = output_size
+
         self.conv_layer1 = nn.Conv2d(
             in_channels=1,
             out_channels=hidden_channel,
